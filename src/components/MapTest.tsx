@@ -1,11 +1,13 @@
 /* eslint-disable */
 import * as React from "react";
-import { Map, GeoJSON } from "react-leaflet";
+import { Map, GeoJSON, TileLayer } from "react-leaflet";
 import { Dropdown } from "semantic-ui-react";
 
 // import actData from "./data/actData.json";
 
-const data = require("./data/ausData17MB.json");
+// const data = require("./data/ausData17MB.json");
+const data = require("./data/Waterway_Structures.json");
+const data2 = require("./data/hy_water_area_polygon7mb.json");
 
 const states = {
   1: "NSW",
@@ -98,7 +100,7 @@ export const MapTest = () => {
   //                     '#FFEDA0';
   // }
 
-  const getColor = (a, b) => {
+  /*const getColor = (a, b) => {
     return a > 90 && b > 1000 ? '#002654' :
       a > 80 && b > 800 ? '#003B8D' :
         a > 70 && b > 600 ? '#0049C6' :
@@ -107,17 +109,28 @@ export const MapTest = () => {
               a > 30 && b > 200 ? '#A6CDFC' :
                 a > 10 && b > 100 ? '#F7F8F9' :
                   '#FFFFFF';
-  };
+  };*/
 
 
-  const geoJSONStyle = (feature) => ({
+  const geoJSONStyle = (_feature) => ({
     // color: '#1f2021',
     weight: 0.7,
-    fillOpacity: 0.5,
-    fillColor: getColor(feature.properties[variableA], feature.properties[variableB]),
-    // fillColor: '#fff2af',
-    // color: "white",
-    color: getColor(feature.properties[variableA], feature.properties[variableB]),
+    fillOpacity: 1,
+    // fillColor: getColor(feature.properties[variableA], feature.properties[variableB]),
+    fillColor: '#38e232',
+    color: '#3a6605',
+    // color: getColor(feature.properties[variableA], feature.properties[variableB]),
+    // dashArray: '3',
+  });
+
+  const geoJSONStyle2 = (_feature) => ({
+    // color: '#1f2021',
+    weight: 0.7,
+    fillOpacity: 1,
+    // fillColor: getColor(feature.properties[variableA], feature.properties[variableB]),
+    fillColor: '#32d9e2',
+    color: '#056166',
+    // color: getColor(feature.properties[variableA], feature.properties[variableB]),
     // dashArray: '3',
   });
 
@@ -157,6 +170,7 @@ export const MapTest = () => {
   const handleDropdownChange = (data, callFunc) => {
     callFunc(data.value);
   };
+  console.log(!!data, !!onEachFeature, data2);
 
   return (
     <>
@@ -177,15 +191,20 @@ export const MapTest = () => {
       </div>
 
       <Map center={position} zoom={zoom}>
-        {/* <TileLayer
+         <TileLayer
           attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.png"
-        /> */}
+        />
         <GeoJSON
           data={data.features}
           style={geoJSONStyle}
           onEachFeature={onEachFeature}
+        />
+        <GeoJSON
+          data={data2.geometries}
+          style={geoJSONStyle2}
+          // onEachFeature={onEachFeature}
         />
       </Map>
     </>
