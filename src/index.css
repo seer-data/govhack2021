@@ -11,3 +11,8 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ui.button.purple {
+  background-color: #8189e8;
+  color: #fff;
+}

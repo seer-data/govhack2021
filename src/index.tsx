@@ -3,10 +3,11 @@ import * as ReactDOM from 'react-dom';
 import './index.css';
 // import reportWebVitals from './reportWebVitals';
 import { MapTest } from "./components/MapTest";
+import { GameWelcome } from 'components/GameWelcome';
 
 ReactDOM.render(
   <React.StrictMode>
-    <MapTest />
+    <GameWelcome />
   </React.StrictMode>,
   document.getElementById('root')
 );
