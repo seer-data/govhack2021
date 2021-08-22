@@ -3,6 +3,7 @@ import { useState } from "react";
 import Wave from "react-wavify";
 import { Button, Input, Message, Form as SemanticForm, Dropdown, Label, Icon } from "semantic-ui-react";
 import { Form, Field } from "react-final-form";
+import { divIcon } from "leaflet";
 
 const required = (value) => (value ? undefined : "Required");
 const mustBeNumber = (value) => (isNaN(value) ? "Must be a number" : undefined);
@@ -49,7 +50,13 @@ const FieldSelect = ({ input, meta, label, placeholder, options }) => (
   </div>
 );
 
+// https://www.abs.gov.au/statistics/people/population/national-state-and-territory-population/latest-release
 const constants = {
+    population: {
+        "NSW": 8172500,
+        "VIC": 6661700,
+        "SA": 1770800,
+    },
   sydneyPopulation: 5312163, // people
   sydneyPopDensity: 430, // people per square km
   usageData: {
@@ -61,7 +68,7 @@ const constants = {
   }
 };
 
-const damData = {
+const damData = { // All values in ML (megalitres)
   "Woronora Dam": {
     volume: 57854,
     capacity: 71790, // capacity
@@ -69,6 +76,10 @@ const damData = {
   "Warragamba Dam": {
     volume: 1955246,
     capacity: 2027000,
+  },
+  "Closest Sydney Dams": {
+    volume: 57854 + 1955246,
+    capacity: 71790 + 2027000,
   }
 }
 
@@ -84,29 +95,54 @@ export const GameWelcome = () => {
     const { postcode, age, showerMinutes, timesHandsWashed, washingType } = formData || {};
     const closestDam = getClosestDam(postcode || 2000);
     const damPercentFull = Math.round(closestDam.volume / closestDam.capacity * 100);
-    console.log(formData);
 
-    const positiveOutcome = () => {
-        const rand = Math.random();
+    const positiveDamOutcome = () => {
+        const remainderDamPercent = getDamPercentRemainder();
 
-        if (rand > 0.5) {
+        if (remainderDamPercent > 0.5) {
             return true;
         } else {
             return false;
         }
     }
 
+    const positiveIndividualUsage = () => {
+        const goodUsage = (
+            washingType === "topLoader" &&
+            timesHandsWashed < 10 &&
+            showerMinutes < 12
+        );
+
+        return goodUsage;
+    }
+
+    const getDamPercentRemainder = () => {
+        const currentUserUsage = (showerMinutes * constants.usageData.regularShowerhead) + 
+            (timesHandsWashed * constants.usageData.handWashing) +
+            constants.usageData[washingType];
+        
+        const usageAcrossPopulation = currentUserUsage * constants.population[getStateFromPostcode(postcode)] * 30;
+
+        const remainder = (closestDam.volume * 1000000) - usageAcrossPopulation;
+
+        if (remainder > 0) {
+            const newDamPercentFull = Math.round(remainder / (closestDam.capacity * 1000000) * 100);
+            return newDamPercentFull;
+        } else {
+            return 0;
+        }
+    }
+
     return (
         <div>
-            <div style={{ margin: "100px auto", width: "80vw", maxHeight: "50vw", textAlign: "center" }}>
+            <div style={{ margin: "100px auto", width: "80vw", maxHeight: "70vw", textAlign: "center" }}>
 
               <div style={{ width: 600, margin: "0 auto" }}>
                 {/* AGE & POSTCODE */}
                 {panel === 1 &&
                 <Form
-                  // initialValues={{ postcode: 3000, age: 18 }}
+                //   initialValues={{ postcode: 3000, age: 18 }}
                   onSubmit={values => {
-                    console.log(values);
                     setFormData({ ...formData, ...values });
                     setPanel(2);
                   }}
@@ -141,11 +177,9 @@ export const GameWelcome = () => {
                         type="submit"
                         className="ui button purple"
                         style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                        // color='olive'
-                        content="Let's find out..."
-                        // icon='arrow right'
+                        content="Let's get started!"
                         label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Next", icon: 'arrow right' }}
-                        disabled={!values.postcode || !values.age}
+                        disabled={!values && !values.postcode || !values.age}
                       />
                     </SemanticForm>
                   )}
@@ -157,7 +191,7 @@ export const GameWelcome = () => {
                 {/* MAIN QUESTIONS */}
                 {panel === 2 &&
                 <Form
-                  // initialValues={{ showerMinutes: 10, timesHandsWashed: 18, washingType: "Top-Loader" }}
+                //   initialValues={{ showerMinutes: 10, timesHandsWashed: 18, washingType: "topLoader" }}
                   onSubmit={values => {
                     console.log(values);
                     setFormData({ ...formData, ...values });
@@ -191,8 +225,8 @@ export const GameWelcome = () => {
                           component={FieldSelect}
                           placeholder="Eg. Top"
                           options={[
-                            { key: "Top-Loader", text: "Top-Loader", value: "Top-Loader" },
-                            { key: "Front-Loader", text: "Front-Loader", value: "Front-Loader" }
+                            { key: "Top-Loader", text: "Top-Loader", value: "topLoader" },
+                            { key: "Front-Loader", text: "Front-Loader", value: "frontLoader" }
                           ]}
                         />
                       </div>
@@ -201,10 +235,7 @@ export const GameWelcome = () => {
                         type="submit"
                         className="ui button purple"
                         style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                        // color='olive'
                         content="Let's find out..."
-                        // icon='arrow right'
-                        label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Next", icon: 'arrow right' }}
                         disabled={!values.showerMinutes || !values.timesHandsWashed || !values.washingType}
                       />
                     </SemanticForm>
@@ -216,26 +247,21 @@ export const GameWelcome = () => {
                 {/* CURRENT DAM STATUS */}
                 {panel === 3 &&
                     <>
-                        <h1>Here's what your closest dam looks like now ...</h1>
+                        <h1>Here's what your closest dam looks like now...</h1>
 
                         <div style={{
                             width: "300px", height: "300px", position: "relative",
                             border: "1px black solid", borderTop: "none", margin: "0 auto"
                         }}>
-                            <div style={{
-                                bottom: 0, height: "100%", width: "100%",
-                                // backgroundColor: "blue",
-                                position: "absolute"
-                            }}>
-                              <Label style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)" }} color="blue">
+                            <div style={{bottom: 0, height: `${damPercentFull}%`, width: "100%", position: "absolute"}}>
+                              <div style={{ color: "white", fontSize: "32px", position: "absolute", left: "50%", top: "60%", transform: "translate(-50%, -50%)" }} color="blue">
                                 <Icon name="tint" />{damPercentFull}%
-                              </Label>
+                              </div>
                                 <Wave
                                     style={{ height: "100%" }}
                                     fill='#52bfff'
                                     paused={false}
                                     options={{
-                                        height: damPercentFull,
                                         amplitude: 20,
                                         speed: 0.1,
                                         points: 3
@@ -247,9 +273,7 @@ export const GameWelcome = () => {
                         <Button
                             className="ui button purple"
                             style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                            // color='olive'
-                            content="Let's see what it will look like tomorrow..."
-                            // icon='arrow right'
+                            content="Let's see what it will look like in a month..."
                             label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Next", icon: 'arrow right' }}
                             onClick={() => setPanel(4)}
                         />
@@ -259,9 +283,9 @@ export const GameWelcome = () => {
                 {/* AFTER USAGE DAM LEVELS */}
                 {panel === 4 &&
                     <>
-                        <h1>If everyone in {getStateFromPostcode(postcode)} had the same usage as you, here's what would be left ...</h1>
+                        <h1>If everyone in {getStateFromPostcode(postcode)} had the same usage for a month, here's what would be left...</h1>
 
-                        {positiveOutcome() &&
+                        {!positiveDamOutcome() &&
                             <p role="img" aria-label="scared emoji" style={{ fontSize: "5rem", margin: 0 }}>
                                 😨
                             </p>
@@ -271,33 +295,29 @@ export const GameWelcome = () => {
                             width: "300px", height: "300px", position: "relative",
                             border: "1px black solid", borderTop: "none", margin: "0 auto"
                         }}>
-                            <div style={{
-                                bottom: 0, height: "50px", width: "100%",
-                                // backgroundColor: "blue",
-                                position: "absolute"
-                            }}>
-                                <h1 style={{ position: "absolute", left: "125px" }}>10%</h1>
+                            <div style={{ color: getDamPercentRemainder() > 60 ? "white" : "black", fontSize: "32px", position: "absolute", left: "50%", top: "60%", transform: "translate(-50%, -50%)" }}>
+                                <Icon name="tint" />{getDamPercentRemainder()}%
+                            </div>
+                            <div style={{bottom: 0, height: `${getDamPercentRemainder()}%`, width: "100%", position: "absolute"}}>
+                              {getDamPercentRemainder() > 0 &&
                                 <Wave
                                     style={{ height: "100%" }}
                                     fill='#52bfff'
                                     paused={false}
                                     options={{
-                                        height: 20,
                                         amplitude: 20,
                                         speed: 0.1,
                                         points: 3
                                     }}
                                 />
-
+                                }
                             </div>
                         </div>
 
                         <Button
                             className="ui button purple"
                             style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                            // color='olive'
                             content="Help!"
-                            // icon='arrow right'
                             label={{ basic: true, color: '#8189e8', pointing: 'left', content: "What can we do???", icon: 'arrow right' }}
                             onClick={() => setPanel(5)}
                         />
@@ -307,7 +327,7 @@ export const GameWelcome = () => {
                 {/* OUTCOME PANEL */}
                 {panel === 5 &&
                     <>
-                        {positiveOutcome() ?
+                        {(positiveDamOutcome() && positiveIndividualUsage()) ?
                             <>
                                 <h1>Congratulations! You are a Water Warrior!</h1>
 
@@ -342,19 +362,15 @@ export const GameWelcome = () => {
                         <Button
                             className="ui button purple"
                             style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                            // color='olive'
                             content="Share this on Facebook"
-                            // icon='arrow right'
                             label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Let's raise awareness", icon: 'arrow right' }}
                             onClick={() => setPanel(2)}
                         />
                         <p>
                             <Button
-                                // className="ui button purple"
                                 style={{ marginTop: "40px" }}
                                 color='teal'
                                 content="Monitor dam levels"
-                                // icon='arrow right'
                                 label={{ basic: true, color: 'teal', pointing: 'left', content: "Notify me when it drops", icon: 'arrow right' }}
                                 onClick={() => setPanel(2)}
                             />
@@ -363,7 +379,7 @@ export const GameWelcome = () => {
                 }
             </div>
 
-            <div style={{ minHeight: "50vh" }}>
+            <div style={{ minHeight: "30vh", marginTop: "200px" }}>
                 <Wave
                     style={{ height: "50vh" }}
                     fill='#52bfff'
