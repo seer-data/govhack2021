@@ -80,11 +80,15 @@ const damData = { // All values in ML (megalitres)
   "Closest Sydney Dams": {
     volume: 57854 + 1955246,
     capacity: 71790 + 2027000,
+  },
+  "Sugarloaf": {
+      volume: 85993,
+      capacity: 96253,
   }
 }
 
 const getClosestDam = (postcode) => {
-  const closest = "Woronora Dam";
+  const closest = getStateFromPostcode(postcode) === "VIC" ? "Sugarloaf" : "Woronora Dam";
   return damData[closest];
 }
 
@@ -371,10 +375,11 @@ export const GameWelcome = () => {
                                 style={{ marginTop: "40px" }}
                                 color='teal'
                                 content="Monitor dam levels"
-                                label={{ basic: true, color: 'teal', pointing: 'left', content: "Notify me when it drops", icon: 'arrow right' }}
+                                label={{ basic: true, pointing: 'left', content: "Notify me of major changes", icon: 'arrow right' }}
                                 onClick={() => setPanel(2)}
                             />
                         </p>
+                        <p style={{ color: "teal", fontWeight: 700, marginTop: "50px", cursor: "pointer" }} onClick={() => setPanel(1)}>Start again</p>
                     </>
                 }
             </div>
