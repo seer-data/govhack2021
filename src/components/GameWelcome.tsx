@@ -1,7 +1,15 @@
 import * as React from "react";
 import { useState } from "react";
 import Wave from "react-wavify";
-import { Button, Input } from "semantic-ui-react";
+import { Button, Input, Message, Form as SemanticForm, Dropdown, Label, Icon } from "semantic-ui-react";
+import { Form, Field } from "react-final-form";
+
+const required = (value) => (value ? undefined : "Required");
+const mustBeNumber = (value) => (isNaN(value) ? "Must be a number" : undefined);
+const minValue = (min) => (value) =>
+  isNaN(value) || value >= min ? undefined : `Should be greater than ${min}`;
+const composeValidators = (...validators) => (value) =>
+  validators.reduce((error, validator) => error || validator(value), undefined);
 
 const getStateFromPostcode = (postcode) => {
     if (postcode >= 3000) {
@@ -13,11 +21,70 @@ const getStateFromPostcode = (postcode) => {
     }
 }
 
+const FieldInput = ({ input, meta, label, placeholder }) => (
+  <div style={{ marginBottom: "1rem" }}>
+    <h4>{label}</h4>
+    <SemanticForm.Input
+      {...input}
+      placeholder={placeholder || ""}
+      error={(meta.error && meta.touched) ? { content: meta.error, pointing: "above" } : undefined}
+    />
+  </div>
+);
+
+const FieldSelect = ({ input, meta, label, placeholder, options }) => (
+  <div style={{ marginBottom: "1rem" }}>
+    <h4>{label}</h4>
+    <Dropdown
+      {...input}
+      onChange={(_, data) => {
+        console.log(data);
+        input.onChange(data?.value);
+      }}
+      selection
+      options={options}
+      placeholder={placeholder || ""}
+      error={meta.error && meta.touched}
+    />
+  </div>
+);
+
+const constants = {
+  sydneyPopulation: 5312163, // people
+  sydneyPopDensity: 430, // people per square km
+  usageData: {
+    regularShowerhead: 10, // L/min
+    efficientShowerhead: 6.5, // L/min
+    frontLoader: 65, // L per wash
+    topLoader: 110, // L per wash
+    handWashing: 2, // L for a 30 second hand washing
+  }
+};
+
+const damData = {
+  "Woronora Dam": {
+    volume: 57854,
+    capacity: 71790, // capacity
+  },
+  "Warragamba Dam": {
+    volume: 1955246,
+    capacity: 2027000,
+  }
+}
+
+const getClosestDam = (postcode) => {
+  const closest = "Woronora Dam";
+  return damData[closest];
+}
+
 export const GameWelcome = () => {
 
     const [panel, setPanel] = useState(1);
-    const [postcode, setPostcode] = useState<number>(3000);
-    const [age, setAge] = useState<number>(18);
+    const [formData, setFormData] = useState<any>({});
+    const { postcode, age, showerMinutes, timesHandsWashed, washingType } = formData || {};
+    const closestDam = getClosestDam(postcode || 2000);
+    const damPercentFull = Math.round(closestDam.volume / closestDam.capacity * 100);
+    console.log(formData);
 
     const positiveOutcome = () => {
         const rand = Math.random();
@@ -33,61 +100,118 @@ export const GameWelcome = () => {
         <div>
             <div style={{ margin: "100px auto", width: "80vw", maxHeight: "50vw", textAlign: "center" }}>
 
+              <div style={{ width: 600, margin: "0 auto" }}>
                 {/* AGE & POSTCODE */}
                 {panel === 1 &&
-                    <>
-                        <h1>Are you a Water Warrior?</h1>
+                <Form
+                  // initialValues={{ postcode: 3000, age: 18 }}
+                  onSubmit={values => {
+                    console.log(values);
+                    setFormData({ ...formData, ...values });
+                    setPanel(2);
+                  }}
+                  render={({ handleSubmit, form, submitting, pristine, values }) => (
+                    <SemanticForm onSubmit={handleSubmit}>
+                      <h1>Are you a Water Warrior?</h1>
+                      <Message color="blue">
+                        Learn about how to save water!
+                      </Message>
 
-                        <div style={{ marginTop: "100px" }}>
-                            <h4>What's your postcode?</h4>
-                            <Input placeholder="Eg. 2113"
-                                onChange={(_e, { value }) => parseInt(value) ? setPostcode(parseInt(value)) : setPostcode(undefined)} />
-
-                            <h4>How old are you?</h4>
-                            <Input placeholder="Eg. 16"
-                                onChange={(_e, { value }) => parseInt(value) ? setAge(parseInt(value)) : setAge(undefined)} />
-                        </div>
-
-                        <Button
-                            className="ui button purple"
-                            style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                            // color='olive'
-                            content="Let's find out..."
-                            // icon='arrow right'
-                            label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Next", icon: 'arrow right' }}
-                            onClick={() => setPanel(2)}
-                            disabled={!postcode || !age}
+                      <div style={{ marginTop: "100px" }}>
+                        <Field
+                          name="postcode"
+                          label="What's your postcode?"
+                          validate={composeValidators(required, mustBeNumber)}
+                          component={FieldInput}
+                          placeholder="Eg. 2113"
+                          type="number"
                         />
-                    </>
-                }
 
+                        <Field
+                          name="age"
+                          label="How old are you?"
+                          validate={composeValidators(required, mustBeNumber)}
+                          component={FieldInput}
+                          placeholder="Eg. 16"
+                          type="number"
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="ui button purple"
+                        style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
+                        // color='olive'
+                        content="Let's find out..."
+                        // icon='arrow right'
+                        label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Next", icon: 'arrow right' }}
+                        disabled={!values.postcode || !values.age}
+                      />
+                    </SemanticForm>
+                  )}
+                />
+                }
+              </div>
+
+              <div style={{ width: 600, margin: "0 auto" }}>
                 {/* MAIN QUESTIONS */}
                 {panel === 2 &&
-                    <>
-                        <h1>Are you a Water Warrior?</h1>
+                <Form
+                  // initialValues={{ showerMinutes: 10, timesHandsWashed: 18, washingType: "Top-Loader" }}
+                  onSubmit={values => {
+                    console.log(values);
+                    setFormData({ ...formData, ...values });
+                    setPanel(3);
+                  }}
+                  render={({ handleSubmit, form, submitting, pristine, values }) => (
+                    <SemanticForm onSubmit={handleSubmit}>
+                      <h1>Are you a Water Warrior?</h1>
 
-                        <div style={{ marginTop: "100px" }}>
-                            <h4>How many minutes do you usually shower for?</h4>
-                            <Input placeholder="Eg. 20" />
-
-                            <h4>How many times a day do you wash your hands?</h4>
-                            <Input placeholder="Eg. 8" />
-
-                            <h4>Does your household use a front loader washing machine or top loader?</h4>
-                            <Input placeholder="Eg. Top" />
-                        </div>
-
-                        <Button
-                            className="ui button purple"
-                            style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                            // color='olive'
-                            content="Let's find out..."
-                            // icon='arrow right'
-                            label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Next", icon: 'arrow right' }}
-                            onClick={() => setPanel(3)}
+                      <div style={{ marginTop: "100px" }}>
+                        <Field
+                          name="showerMinutes"
+                          label="How many minutes do you usually shower for?"
+                          validate={composeValidators(required, mustBeNumber)}
+                          component={FieldInput}
+                          placeholder="Eg. 20"
+                          type="number"
                         />
-                    </>
+                        <Field
+                          name="timesHandsWashed"
+                          label="How many times a day do you wash your hands?"
+                          validate={composeValidators(required, mustBeNumber)}
+                          component={FieldInput}
+                          placeholder="Eg. 8"
+                          type="number"
+                        />
+                        <Field
+                          name="washingType"
+                          label="Does your household use a front loader washing machine or top loader?"
+                          validate={composeValidators(required)}
+                          component={FieldSelect}
+                          placeholder="Eg. Top"
+                          options={[
+                            { key: "Top-Loader", text: "Top-Loader", value: "Top-Loader" },
+                            { key: "Front-Loader", text: "Front-Loader", value: "Front-Loader" }
+                          ]}
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="ui button purple"
+                        style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
+                        // color='olive'
+                        content="Let's find out..."
+                        // icon='arrow right'
+                        label={{ basic: true, color: '#8189e8', pointing: 'left', content: "Next", icon: 'arrow right' }}
+                        disabled={!values.showerMinutes || !values.timesHandsWashed || !values.washingType}
+                      />
+                    </SemanticForm>
+                  )}
+                />
                 }
+              </div>
 
                 {/* CURRENT DAM STATUS */}
                 {panel === 3 &&
@@ -99,23 +223,24 @@ export const GameWelcome = () => {
                             border: "1px black solid", borderTop: "none", margin: "0 auto"
                         }}>
                             <div style={{
-                                bottom: 0, height: "200px", width: "100%",
+                                bottom: 0, height: "100%", width: "100%",
                                 // backgroundColor: "blue",
                                 position: "absolute"
                             }}>
-                                <h1 style={{ position: "absolute", left: "125px" }}>30%</h1>
+                              <Label style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)" }} color="blue">
+                                <Icon name="tint" />{damPercentFull}%
+                              </Label>
                                 <Wave
                                     style={{ height: "100%" }}
                                     fill='#52bfff'
                                     paused={false}
                                     options={{
-                                        height: 20,
+                                        height: damPercentFull,
                                         amplitude: 20,
                                         speed: 0.1,
                                         points: 3
                                     }}
                                 />
-
                             </div>
                         </div>
 

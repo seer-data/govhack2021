@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import './index.css';
 // import reportWebVitals from './reportWebVitals';
-import { MapTest } from "./components/MapTest";
+// import { MapTest } from "./components/MapTest";
 import { GameWelcome } from 'components/GameWelcome';
 
 ReactDOM.render(
