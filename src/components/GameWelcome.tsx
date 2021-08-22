@@ -117,10 +117,10 @@ export const GameWelcome = () => {
     }
 
     const getDamPercentRemainder = () => {
-        const currentUserUsage = (showerMinutes * constants.usageData.regularShowerhead) + 
+        const currentUserUsage = (showerMinutes * constants.usageData.regularShowerhead) +
             (timesHandsWashed * constants.usageData.handWashing) +
             constants.usageData[washingType];
-        
+
         const usageAcrossPopulation = currentUserUsage * constants.population[getStateFromPostcode(postcode)] * 30;
 
         const remainder = (closestDam.volume * 1000000) - usageAcrossPopulation;
@@ -295,7 +295,7 @@ export const GameWelcome = () => {
                             width: "300px", height: "300px", position: "relative",
                             border: "1px black solid", borderTop: "none", margin: "0 auto"
                         }}>
-                            <div style={{ color: getDamPercentRemainder() > 60 ? "white" : "black", fontSize: "32px", position: "absolute", left: "50%", top: "60%", transform: "translate(-50%, -50%)" }}>
+                            <div style={{ color: getDamPercentRemainder() > 60 ? "white" : "black", fontSize: "32px", position: "absolute", left: "50%", top: "60%", transform: "translate(-50%, -50%)", zIndex: 2 }}>
                                 <Icon name="tint" />{getDamPercentRemainder()}%
                             </div>
                             <div style={{bottom: 0, height: `${getDamPercentRemainder()}%`, width: "100%", position: "absolute"}}>
