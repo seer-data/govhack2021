@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/govhack2021/static/css/main.c3a9cb9e.chunk.css",
-    "main.js": "/govhack2021/static/js/main.609cb040.chunk.js",
-    "main.js.map": "/govhack2021/static/js/main.609cb040.chunk.js.map",
+    "main.js": "/govhack2021/static/js/main.ed5cf107.chunk.js",
+    "main.js.map": "/govhack2021/static/js/main.ed5cf107.chunk.js.map",
     "runtime-main.js": "/govhack2021/static/js/runtime-main.81609e56.js",
     "runtime-main.js.map": "/govhack2021/static/js/runtime-main.81609e56.js.map",
-    "static/js/2.e0606b03.chunk.js": "/govhack2021/static/js/2.e0606b03.chunk.js",
-    "static/js/2.e0606b03.chunk.js.map": "/govhack2021/static/js/2.e0606b03.chunk.js.map",
+    "static/js/2.4ac5c9f1.chunk.js": "/govhack2021/static/js/2.4ac5c9f1.chunk.js",
+    "static/js/2.4ac5c9f1.chunk.js.map": "/govhack2021/static/js/2.4ac5c9f1.chunk.js.map",
     "index.html": "/govhack2021/index.html",
     "static/css/main.c3a9cb9e.chunk.css.map": "/govhack2021/static/css/main.c3a9cb9e.chunk.css.map",
-    "static/js/2.e0606b03.chunk.js.LICENSE.txt": "/govhack2021/static/js/2.e0606b03.chunk.js.LICENSE.txt"
+    "static/js/2.4ac5c9f1.chunk.js.LICENSE.txt": "/govhack2021/static/js/2.4ac5c9f1.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.81609e56.js",
-    "static/js/2.e0606b03.chunk.js",
+    "static/js/2.4ac5c9f1.chunk.js",
     "static/css/main.c3a9cb9e.chunk.css",
-    "static/js/main.609cb040.chunk.js"
+    "static/js/main.ed5cf107.chunk.js"
   ]
 }
