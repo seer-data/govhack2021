@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/water-warrior/static/css/main.c3a9cb9e.chunk.css",
+    "main.js": "/water-warrior/static/js/main.bb95e4a7.chunk.js",
+    "main.js.map": "/water-warrior/static/js/main.bb95e4a7.chunk.js.map",
+    "runtime-main.js": "/water-warrior/static/js/runtime-main.bd89d007.js",
+    "runtime-main.js.map": "/water-warrior/static/js/runtime-main.bd89d007.js.map",
+    "static/js/2.e0606b03.chunk.js": "/water-warrior/static/js/2.e0606b03.chunk.js",
+    "static/js/2.e0606b03.chunk.js.map": "/water-warrior/static/js/2.e0606b03.chunk.js.map",
+    "index.html": "/water-warrior/index.html",
+    "static/css/main.c3a9cb9e.chunk.css.map": "/water-warrior/static/css/main.c3a9cb9e.chunk.css.map",
+    "static/js/2.e0606b03.chunk.js.LICENSE.txt": "/water-warrior/static/js/2.e0606b03.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.bd89d007.js",
+    "static/js/2.e0606b03.chunk.js",
+    "static/css/main.c3a9cb9e.chunk.css",
+    "static/js/main.bb95e4a7.chunk.js"
+  ]
+}
