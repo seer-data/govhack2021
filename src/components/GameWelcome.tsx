@@ -99,7 +99,7 @@ export const GameWelcome = () => {
     const positiveDamOutcome = () => {
         const remainderDamPercent = getDamPercentRemainder();
 
-        if (remainderDamPercent > 0.5) {
+        if (remainderDamPercent > 15) {
             return true;
         } else {
             return false;
@@ -108,9 +108,9 @@ export const GameWelcome = () => {
 
     const positiveIndividualUsage = () => {
         const goodUsage = (
-            washingType === "topLoader" &&
-            timesHandsWashed < 10 &&
-            showerMinutes < 12
+            washingType === "frontLoader" &&
+            timesHandsWashed < 12 &&
+            showerMinutes < 15
         );
 
         return goodUsage;
@@ -149,9 +149,9 @@ export const GameWelcome = () => {
                   render={({ handleSubmit, form, submitting, pristine, values }) => (
                     <SemanticForm onSubmit={handleSubmit}>
                       <h1>Are you a Water Warrior?</h1>
-                      <Message color="blue">
-                        Learn about how to save water!
-                      </Message>
+                      {/* <Message color="blue">
+                        Learn about water availability in your area!
+                      </Message> */}
 
                       <div style={{ marginTop: "100px" }}>
                         <Field
@@ -317,8 +317,8 @@ export const GameWelcome = () => {
                         <Button
                             className="ui button purple"
                             style={{ marginTop: "40px", backgroundColor: "#8189e8" }}
-                            content="Help!"
-                            label={{ basic: true, color: '#8189e8', pointing: 'left', content: "What can we do???", icon: 'arrow right' }}
+                            content={positiveDamOutcome() ? "What's next?" : "Help!"}
+                            label={{ basic: true, color: '#8189e8', pointing: 'left', content: positiveDamOutcome() ? "" : "What can we do???", icon: 'arrow right' }}
                             onClick={() => setPanel(5)}
                         />
                     </>
